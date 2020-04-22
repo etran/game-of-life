@@ -32,7 +32,7 @@ impl GameOfLife {
 
         for x in 0..self.w {
             for y in 0..self.h {
-                let num_alive = self.check_neighbours(x as i32, y as i32);
+                let num_alive = self.check_neighbours(x, y);
                 // Any live cell with two or three live neighbors survives.
                 // Any dead cell with three live neighbors becomes a live cell.
                 // All other live cells die in the next generation. Similarly, all other dead cells stay dead.
@@ -52,26 +52,25 @@ impl GameOfLife {
         self.grid = new_grid;
     }
 
-    fn check_neighbours(&self, x: i32, y: i32) -> i32 {
-        let w = self.w as i32;
-        let h = self.h as i32;
-
-        let neighbours: [(i32, i32); 8] = [
-            (x - 1, y - 1),
-            (x, y - 1),
-            (x + 1, y - 1),
-            (x - 1, y),
-            (x + 1, y),
-            (x - 1, y + 1),
-            (x, y + 1),
-            (x + 1, y + 1),
+    fn check_neighbours(&self, x: usize, y: usize) -> i32 {
+        let x_minus = (x - 1 + self.w) % self.w;
+        let x_plus = (x + 1) % self.w;
+        let y_minus = (y - 1 + self.h) % self.h;
+        let y_plus = (y + 1) % self.h;
+        let neighbours: [(usize, usize); 8] = [
+            (x_minus, y_minus),
+            (x, y_minus),
+            (x_plus, y_minus),
+            (x_minus, y),
+            (x_plus, y),
+            (x_minus, y_plus),
+            (x, y_plus),
+            (x_plus, y_plus),
         ];
         let mut alive_neighbours = 0;
 
         for (i, j) in neighbours.iter() {
-            let real_x = ((*i + w) % w) as usize;
-            let real_y = ((*j + h) % h) as usize;
-            alive_neighbours += self.grid[real_x][real_y];
+            alive_neighbours += self.grid[*i][*j];
         }
         alive_neighbours
     }
@@ -94,14 +93,14 @@ impl GameOfLife {
 }
 
 fn main() {
-    const HEIGHT: usize = 25;
+    const HEIGHT: usize = 20;
     const WIDTH: usize = 150;
 
     let mut game = GameOfLife::new(WIDTH, HEIGHT);
 
-    for _ in 0..100000 {
+    for _ in 0..1000 {
         game.update_game();
-        thread::sleep(time::Duration::from_millis(200));
+        thread::sleep(time::Duration::from_millis(16));
         game.print_grid();
     }
 }
